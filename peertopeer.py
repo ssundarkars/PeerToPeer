@@ -282,7 +282,7 @@ if __name__ == "__main__":
     )
     app_tab.add(chat_frame, text="Chat")
     app_tab.add(help_frame, text="Help")
-    help = open("PeertopeerTk/connectionHelpModule.txt", "r")
+    help = open("connectionHelpModule.txt", "r")
     Label(
         help_frame,
         text=help.read(),

@@ -1,0 +1,17 @@
+Welcome to Peer to Peer, safe and private Connection System. This passage speaks about steps to be followed.
+Inorder to successfully connect to the desired Machine of your choice.
+Pre-requisites:-
+    1.Both Client/Machines should have the file names "Peer2Peer.py".
+    2.Both machines should have a python v-3.8.0 or above in order to run the attached module/s.
+    3.Compiler must have followed packages installed
+        1.time
+        2.tkinter(Tk)
+        3.socket
+        4.threading
+
+Guide for connection:-
+    Application requires IPV4 address (along with port address) of machine to which it has to be connected in order to carry out the 
+communication between peers.
+Here any one machine can become Server and other become Client.
+IPV4/port address like : 127.168.91.144/port
+preferred port range (5000-65535)

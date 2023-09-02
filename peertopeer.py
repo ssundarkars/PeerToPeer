@@ -163,10 +163,8 @@ def initiate(target):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
-        socket.settimeout(30000)
         print('line165')
         server.connect((ipadrs[0], ipadrs[1]))
-        # socket.settimeout(None)
         print('line 168')
         sender = Message()
         sender.binder(server, name)

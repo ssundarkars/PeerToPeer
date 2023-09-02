@@ -16,7 +16,7 @@ filepath = data = None
 def invalidMachineAddress():
     messagebox.showerror(
         title="Invalid Machine Address !!",
-        message="We canot proceed without a valid IP address.\nTry giving a valid IP/port",
+        message="We cannot proceed without a valid IP address.\nTry giving a valid IP/port",
     )
 
 
@@ -25,7 +25,8 @@ def getIP():
     ipadrds = list(map(str, ip.get().split("/")))
     try:
         ipadrds[1] = int(ipadrds[1])
-    except IndexError as IE:
+    except (IndexError,ValueError) as IE:
+        print(IE)
         invalidMachineAddress()
     return [ipadrds[0], ipadrds[1]]
 
@@ -68,7 +69,7 @@ class Message(Thread):
             global filepath
             global chat_row
             global data
-            if data != None and len(data) > 0 and data != "\n":
+            if   data!=None and len(data) > 0 and data != "\n":
                 data = self.name1 + ": " + data
                 self.con.send(bytes(data, "utf-8"))
                 chatobj = lightmodeTheme1()
@@ -85,6 +86,7 @@ class Message(Thread):
                 data = None
 
         def filesender():
+            global chat_row
             global filepath
             global data
             filename = filepath.split("/")[-1]
@@ -94,8 +96,9 @@ class Message(Thread):
                     ffmt = "file_:" + " " + filename
                     self.con.send(bytes(ffmt, "utf-8"))
                     self.con.send(bytes(file.read(), "utf-8"))
-                    Label(
-                        temp,
+                    chat_row+=1
+                    file.close();
+                    Label(temp,
                         text=f'File "{filename}" sent.',
                         width=25,
                         wraplength=180,
@@ -104,7 +107,8 @@ class Message(Thread):
                     ).grid(row=chat_row, column=1, sticky="w", padx=15)
                     error.set(f"File {filename} sent successfully")
                     filepath = None
-            except:
+            except Exception as ex:
+                print(ex)
                 pass
 
         name = current_thread().name
@@ -159,9 +163,11 @@ def initiate(target):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
-        socket.timeout(30)
+        socket.settimeout(30000)
+        print('line165')
         server.connect((ipadrs[0], ipadrs[1]))
-        socket.timeout(None)
+        # socket.settimeout(None)
+        print('line 168')
         sender = Message()
         sender.binder(server, name)
         sender.setName("sender")
@@ -172,7 +178,7 @@ def initiate(target):
         receiver.start()
     except Exception as e:
         try:
-            server.bind(('127.0.0.1', ipadrs[1]))
+            server.bind(('192.168.1.14', ipadrs[1]))
             server.listen(5)
             clt, addr = server.accept()
             error.set(f"Connection Stablished {clt}")
@@ -185,10 +191,12 @@ def initiate(target):
             sender.start()
             receiver.start()
         except (ConnectionResetError, TypeError) as EE:
+            print(EE)
             error.set(EE)
             connectionreset()
 
         except (OSError, PermissionError) as OS:
+            print(OS)
             error.set(OS)
             messagebox.showerror(
                 title="Port Assignment error", message="Cannot assign requested port"
@@ -198,8 +206,7 @@ def initiate(target):
 # code portion
 def endsession():
     app.destroy()
-    exit()
-
+    exit(0)
 
 def connectionreset():
     global chat_row
@@ -221,7 +228,9 @@ def connectionreset():
     ).grid(row=chat_row, column=0, columnspan=2, sticky="we")
     global reset
     reset = 0
+
     raise Exception("Connection reset")
+
 
 
 def openfile():
@@ -229,7 +238,7 @@ def openfile():
     global defaultopendir
     filepath = filedialog.askopenfilename(
         title="Select File to be sent",
-        filetypes=(("text files", "*.txt"), ("python files", "*.py")),
+        
     )
     filepath = str(filepath)
 
@@ -255,7 +264,7 @@ if __name__ == "__main__":
     app.title("Connect to peers Indepedently")
     app.geometry("550x900")
     app.maxsize(width=730, height=980)
-    icon = PhotoImage(file="PeertopeerTk/p2p.png")
+    icon = PhotoImage(file="../PeerToPeer/p2p.png")   #change filepath if encounterd filenotfound exception
     app.iconphoto(True, icon)
 
     frame0 = Frame(app)
@@ -282,7 +291,7 @@ if __name__ == "__main__":
     )
     app_tab.add(chat_frame, text="Chat")
     app_tab.add(help_frame, text="Help")
-    help = open("connectionHelpModule.txt", "r")
+    help = open("../PeerToPeer/connectionHelpModule.txt", "r")  #change filepath if encounterd filenotfound exception
     Label(
         help_frame,
         text=help.read(),
@@ -294,7 +303,7 @@ if __name__ == "__main__":
         padx=3,
         pady=4,
     ).pack()
-
+    help.close()
     labelip = Label(
         chat_frame,
         text="Peer IP/port",

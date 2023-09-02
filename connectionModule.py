@@ -1,14 +1,14 @@
-
+#This is the heart og the program help us connect and communicate between two machines.
 import socket
 from threading import *
 
-class Message(Thread):
+class Message(Thread):  #Messsage claa extending Thread class, helps client and server send and recieve data at same time
     def __init__(self):
         Thread.__init__(self)
     def binder(self,con,name1):
         self.con=con
         self.name1=name1
-    def run(self):
+    def run(self):    #Task done by new thread
         name=current_thread().getName()
         while True:
             print(name)
@@ -42,7 +42,7 @@ port=int(input('Port : '))
 name=socket.gethostname()
 server=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-try:
+try:  # It will try to connect the perticulat peer.If peer machine is not aactive throws exception
     print('Trying connection.....')
     print(port,type)
     server.connect((ip,port))
@@ -54,7 +54,7 @@ try:
     receiver.setName('receiver')
     sender.start()
     receiver.start()
-except Exception as e :
+except Exception as e :  # Thrown acception handled here, requesting machine will act as server.
     print('Target Machine not active......')
     server.bind(('127.0.0.1', port))
     print('Waiting for connection........')

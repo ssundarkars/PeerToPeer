@@ -1,17 +1,21 @@
-Welcome to Peer to Peer, safe and private Connection System. This passage speaks about steps to be followed.
-Inorder to successfully connect to the desired Machine of your choice.
-Pre-requisites:-
-    1.Both Client/Machines should have the file names "Peer2Peer.py".
-    2.Both machines should have a python v-3.8.0 or above in order to run the attached module/s.
-    3.Compiler must have followed packages installed
-        1.time
-        2.tkinter(Tk)
-        3.socket
-        4.threading
+Welcome to Peer to Peer, a secure and confidential connecting platform. To facilitate a successful connection with your peer, kindly follow these straightforward steps:
 
-Guide for connection:-
-    Application requires IPV4 address (along with port address) of machine to which it has to be connected in order to carry out the 
-communication between peers.
-Here any one machine can become Server and other become Client.
-IPV4/port address like : 127.168.91.144/port
-preferred port range (5000-65535)
+**Connecting to Your Peer: A Step-by-Step Guide**
+
+**Prerequisites:**
+1. Ensure that both clients/machines/peers possess a file named "Peer2Peer.py".
+2. Verify that both machines are equipped with Python version 3.8.0 or above to enable the execution of the provided module/s.
+3. The compiler environment must have the following packages installed:
+    1. time
+    2. tkinter (Tk)
+    3. socket
+    4. threading
+
+**Connection Instructions:**
+The application necessitates the IPv4 address, in conjunction with the port address, of the intended machine for the establishment of communication between peers. Either of the two machines can function as the server while the other assumes the role of the client. The IPv4 address/port address format is as follows: `127.168.91.144/port`.
+
+It is recommended to select a port within the preferred range of 1000 to 65535.
+
+By adhering to these guidelines, you will be able to establish a successful connection between peers and engage in seamless communication through the Peer to Peer platform.
+
+Thank you for choosing our platform for your connecting needs. Should you encounter any issues or require further assistance, please reach out for any Instructions.

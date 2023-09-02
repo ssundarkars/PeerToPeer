@@ -110,6 +110,9 @@ class Message(Thread):
             except Exception as ex:
                 print(ex)
                 pass
+            except:
+                app.destroy()
+                
 
         name = current_thread().name
         global reset

@@ -5,6 +5,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 import time
+from myMachine import addresswithport
 
 
 global chat_row, data, reset
@@ -61,7 +62,8 @@ class Message(Thread):
     def binder(self, con, name1):
         self.con = con
         self.name1 = name1
-
+    def closeCon(self):
+        self.con.close()
     def run(self):
         chatobj = lightmodeTheme1()
 
@@ -90,14 +92,25 @@ class Message(Thread):
             global filepath
             global data
             filename = filepath.split("/")[-1]
+            filetype = filename.split('.')[-1]
             try:
                 if filename != None:
-                    file = open(filepath, "r")
+                    readmode = ('rb' if filetype in ['png','jpg','jpeg','pdf'] else 'r')  
+                    file = open(filepath,readmode)
                     ffmt = "file_:" + " " + filename
-                    self.con.send(bytes(ffmt, "utf-8"))
-                    self.con.send(bytes(file.read(), "utf-8"))
+                    try:
+                        dd=file.read()
+                        self.con.send(bytes(ffmt+" "+str(len(dd)), "utf-8"))
+                        if readmode=='rb':
+                            # print('sing')
+                            time.sleep(.05)
+                            self.con.sendall(dd)
+                            # print('ed')
+                        else:
+                            self.con.send(bytes(dd, "utf-8"))
+                    except:
+                        connectionreset()
                     chat_row+=1
-                    file.close();
                     Label(temp,
                         text=f'File "{filename}" sent.',
                         width=25,
@@ -110,9 +123,6 @@ class Message(Thread):
             except Exception as ex:
                 print(ex)
                 pass
-            except:
-                app.destroy()
-                
 
         name = current_thread().name
         global reset
@@ -127,17 +137,19 @@ class Message(Thread):
 
             elif name == "receiver":
                 global filedata_wait
+                if not filedata_wait:
+                    recvdata = self.con.recv(1024).decode()
+                    chat_row += 1
+                else:
+                    pass
 
-                recvdata = self.con.recv(100000).decode()
-                chat_row += 1
-
-                if recvdata.split()[0] == "file_:" or filedata_wait:
+                if filedata_wait or recvdata.split()[0] == "file_:" :
                     if filedata_wait == 0:
-                        savefile = recvdata.split()[1]
+                        savefile = ' '.join(recvdata.split()[1:-1])
                         filedata_wait = 1
                         Label(
                             temp,
-                            text=f'File recieved : "{recvdata.split()[-1]}"',
+                            text=f'File recieved : "{savefile}"',
                             width=25,
                             wraplength=180,
                             pady=4,
@@ -145,10 +157,34 @@ class Message(Thread):
                             fg=chatobj.rcv_chat_fg,
                         ).grid(row=chat_row, column=0, sticky="w", padx=15)
                     elif filedata_wait:
-                        file = open(savefile, "w")
+                        writemode=('wb' if savefile.split('.')[-1] in ['png','jpeg','jpeg','pdf','gif'] else 'w')
+                        file = open(savefile, writemode)
+                        size=recvdata.split()[-1]
+                        print(writemode,size)
+                        if writemode=='wb':
+                            recvdata=self.con.recv(1000000)
+
+                            while True:
+                                print(len(recvdata),size,str(len(recvdata))==str(size))
+                                if str(len(recvdata))==str(size):
+                                    print('inbreak')
+                                    self.con.settimeout(2.0)
+                                    try:
+                                        recvdata+=self.con.recv(10000000)
+                                    except TimeoutError:
+                                        pass
+                                    finally:
+                                        self.con.settimeout(None)
+                                    print('broke')
+                                    break
+                                recvdata+=self.con.recv(100000)
+                            print('out')
+                        else:
+                            recvdata=self.con.recv(1024*10).decode()
                         file.write(recvdata)
                         file.close()
                         filedata_wait = 0
+                        recvdata=None
                 else:
                     Label(
                         temp,
@@ -166,8 +202,10 @@ def initiate(target):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
+        # socket.settimeout(30000)
         print('line165')
         server.connect((ipadrs[0], ipadrs[1]))
+        # socket.settimeout(None)
         print('line 168')
         sender = Message()
         sender.binder(server, name)
@@ -179,7 +217,7 @@ def initiate(target):
         receiver.start()
     except Exception as e:
         try:
-            server.bind(('192.168.1.14', ipadrs[1]))
+            server.bind((addresswithport[0], addresswithport[1]))
             server.listen(5)
             clt, addr = server.accept()
             error.set(f"Connection Stablished {clt}")
@@ -214,12 +252,12 @@ def connectionreset():
     chat_row += 1
     cleanbox(ip)
     messagebox.showinfo(
-        title="Connection reset",
+        title="Connection reset/Intrupted",
         message="Connection reset, Waiting for new connection...!!!",
     )
     Label(
         temp,
-        text="Connection reset........!!",
+        text="Connection reset/Lost........!!",
         bg="#f93822",
         fg="#fdd20e",
         font=(14),
@@ -241,7 +279,7 @@ def openfile():
         title="Select File to be sent",
         
     )
-    filepath = str(filepath)
+    filepath = (str(filepath) if len(filepath)>5 else None)
 
 
 def send(event=None):
@@ -265,7 +303,7 @@ if __name__ == "__main__":
     app.title("Connect to peers Indepedently")
     app.geometry("550x900")
     app.maxsize(width=730, height=980)
-    icon = PhotoImage(file="../PeerToPeer/p2p.png")   #change filepath if encounterd filenotfound exception
+    icon = PhotoImage(file="../PeerToPeer/p2p.png")
     app.iconphoto(True, icon)
 
     frame0 = Frame(app)
@@ -292,7 +330,7 @@ if __name__ == "__main__":
     )
     app_tab.add(chat_frame, text="Chat")
     app_tab.add(help_frame, text="Help")
-    help = open("../PeerToPeer/connectionHelpModule.txt", "r")  #change filepath if encounterd filenotfound exception
+    help = open("../PeerToPeer/connectionHelpModule.txt", "r")
     Label(
         help_frame,
         text=help.read(),
@@ -304,7 +342,7 @@ if __name__ == "__main__":
         padx=3,
         pady=4,
     ).pack()
-    help.close()
+
     labelip = Label(
         chat_frame,
         text="Peer IP/port",
@@ -316,6 +354,7 @@ if __name__ == "__main__":
     btncol = buttonColor()
     labelip.grid(row=0, column=0, sticky=W)
     ip = Entry(chat_frame, font=("", 14))
+    ip.insert(0,f'{addresswithport[0]}/{addresswithport[1]}')
     ip.grid(row=0, column=1, sticky="e")
     reset = Button(
         chat_frame,
